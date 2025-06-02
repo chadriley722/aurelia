@@ -1,7 +1,10 @@
 {
+  "name": "aurelia-landing",
+  "version": "1.0.0",
+  "type": "module",
   "dependencies": {
     "@vercel/edge": "^1.2.2",
     "dotenv": "^16.5.0",
-    "openai": "^5.0.2"
+    "openai": "^4.25.1"
   }
 }

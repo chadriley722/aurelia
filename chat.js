@@ -1,128 +1,69 @@
-// Initialize chat functionality when the DOM is fully loaded
+const ENDPOINT = '/api/chat';
+let threadId = null;
+
+const box = document.getElementById('chat-box');
+const input = document.getElementById('chat-input');
+const send = document.getElementById('chat-send');
+
+// Initialize event listeners when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    const chatForm = document.getElementById('chat-form');
-    const messageInput = document.getElementById('message-input');
-    const chatMessages = document.getElementById('chat-messages');
-    const ENDPOINT = '/api/chat';
-    let currentThreadId = null;
-
-    // Add a message to the chat UI
-    function addMessage(role, content) {
-        const messageElement = document.createElement('div');
-        messageElement.className = `message ${role}`;
-        messageElement.textContent = content;
-        chatMessages.appendChild(messageElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    // Handle form submission
-    async function handleSubmit(e) {
-        e.preventDefault();
-        const message = messageInput.value.trim();
-        if (!message) return;
-
-        // Add user message to UI
-        addMessage('user', message);
-        messageInput.value = '';
-
-        // Add loading indicator
-        const loadingElement = document.createElement('div');
-        loadingElement.className = 'message assistant loading';
-        loadingElement.textContent = 'Aurelia is thinking...';
-        chatMessages.appendChild(loadingElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        try {
-            const response = await fetch(ENDPOINT, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    message,
-                    threadId: currentThreadId
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            // Remove loading indicator
-            chatMessages.removeChild(loadingElement);
-
-            // Process streaming response
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let assistantMessage = '';
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                const chunk = decoder.decode(value, { stream: true });
-                const lines = chunk.split('\n').filter(line => line.trim() !== '');
-                
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const data = line.replace(/^data: /, '');
-                        if (data === '[DONE]') continue;
-                        
-                        try {
-                            const parsed = JSON.parse(data);
-                            if (parsed.event === 'thread.message.delta' && parsed.data.delta.content) {
-                                const content = parsed.data.delta.content[0]?.text?.value || '';
-                                if (content) {
-                                    assistantMessage += content;
-                                    updateOrCreateAssistantMessage(assistantMessage);
-                                }
-                            }
-                        } catch (e) {
-                            console.error('Error parsing stream data:', e);
-                        }
-                    }
-                }
-            }
-
-            // Save thread ID for future messages
-            if (!currentThreadId) {
-                // In a real implementation, you'd extract thread ID from the response
-                // For now, we'll just set a placeholder
-                currentThreadId = 'thread_' + Date.now();
-            }
-
-        } catch (error) {
-            console.error('Error:', error);
-            // Remove loading indicator
-            if (chatMessages.contains(loadingElement)) {
-                chatMessages.removeChild(loadingElement);
-            }
-            addMessage('error', 'Aurelia is unavailable, please try later.');
-        }
-    }
-
-    // Update or create assistant message
-    function updateOrCreateAssistantMessage(content) {
-        let messageElement = document.querySelector('.message.assistant:not(.loading)');
-        if (!messageElement) {
-            messageElement = document.createElement('div');
-            messageElement.className = 'message assistant';
-            chatMessages.appendChild(messageElement);
-        }
-        messageElement.textContent = content;
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    // Event listeners
-    if (chatForm && messageInput) {
-        chatForm.addEventListener('submit', handleSubmit);
-        
-        // Optional: Allow sending message with Shift+Enter for new line, Enter to send
-        messageInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit(e);
-            }
+    if (send) send.addEventListener('click', submit);
+    if (input) {
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') submit();
         });
     }
 });
+
+async function submit() {
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+
+    append('user', text);
+
+    try {
+        const res = await fetch(ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text, threadId }),
+        });
+
+        if (!res.ok) throw new Error('Network response was not ok');
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let aiText = '';
+
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            aiText += decoder.decode(value);
+            updateAssistant(aiText);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        updateAssistant('Aurelia is unavailable, please try later.');
+    }
+}
+
+function append(role, text) {
+    const div = document.createElement('div');
+    div.className = `${role === 'user' ? 'text-right' : 'text-left'} my-2`;
+    div.dataset.role = role;
+    div.textContent = text;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
+
+function updateAssistant(text) {
+    let div = box.querySelector('div[data-role="assistant"]:last-child');
+    if (!div) {
+        div = document.createElement('div');
+        div.className = 'text-left my-2';
+        div.dataset.role = 'assistant';
+        box.appendChild(div);
+    }
+    div.textContent = text;
+    box.scrollTop = box.scrollHeight;
+}
