@@ -1,4 +1,5 @@
-const ENDPOINT = 'https://aurelia-chat.vercel.app/api-chat';
+// Full Vercel URL for GitHub Pages compatibility
+const ENDPOINT = 'https://aurelia-ecru.vercel.app/api/chat';
 let threadId = null;
 
 const box = document.getElementById('chat-box');
