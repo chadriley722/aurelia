@@ -1,0 +1,51 @@
+/* Custom styles for Aurelia */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+
+/* Base styles */
+:root {
+    --gold: #D4AF37;
+    --gold-hover: #e6c15a;
+    --navy: #0c1020;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+}
+
+/* Gold text utility */
+.text-gold-500 {
+    color: var(--gold);
+}
+
+/* Gold button hover state */
+.bg-gold-500 {
+    background-color: var(--gold);
+}
+
+.bg-gold-500:hover {
+    background-color: var(--gold-hover);
+}
+
+.hover\\:text-gold-300:hover {
+    color: var(--gold-hover);
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Line clamp for excerpts */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Ensure full viewport height works on mobile */
+.min-h-screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+}
