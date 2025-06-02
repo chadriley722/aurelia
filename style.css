@@ -42,10 +42,50 @@ html {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    line-clamp: 2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 3em; /* Fallback for line-clamp */
 }
 
 /* Ensure full viewport height works on mobile */
 .min-h-screen {
     min-height: 100vh;
     min-height: 100dvh;
+}
+
+/* Navigation styles */
+#main-header {
+    transition: all 0.3s ease-in-out;
+    backdrop-filter: blur(4px);
+}
+
+#main-header.bg-black\/80 {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Mobile menu transition */
+#mobile-menu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+}
+
+#mobile-menu:not(.hidden) {
+    max-height: 300px; /* Adjust based on content */
+}
+
+/* Smooth scrolling for anchor links */
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px; /* Height of your header */
+}
+
+/* Focus styles for accessibility */
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
 }

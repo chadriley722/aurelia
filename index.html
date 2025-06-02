@@ -10,8 +10,40 @@
     <link href="style.css" rel="stylesheet">
 </head>
 <body class="bg-black text-white">
+    <!-- Navigation -->
+    <header class="fixed w-full z-50 transition-all duration-300" id="main-header">
+        <nav aria-label="Main navigation" class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="#home" class="text-2xl font-bold text-gold-500 font-playfair">Aurelia</a>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex space-x-8">
+                    <a href="#home" class="text-white hover:text-gold-500 transition-colors duration-300">Home</a>
+                    <a href="#reflections" class="text-white hover:text-gold-500 transition-colors duration-300">Reflections</a>
+                    <a href="#about" class="text-white hover:text-gold-500 transition-colors duration-300">About</a>
+                </div>
+
+                <!-- Mobile menu button -->
+                <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none" aria-expanded="false" aria-controls="mobile-menu">
+                    <span class="sr-only">Open main menu</span>
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="md:hidden hidden pt-4 pb-2">
+                <a href="#home" class="block py-2 text-white hover:text-gold-500 transition-colors duration-300">Home</a>
+                <a href="#reflections" class="block py-2 text-white hover:text-gold-500 transition-colors duration-300">Reflections</a>
+                <a href="#about" class="block py-2 text-white hover:text-gold-500 transition-colors duration-300">About</a>
+            </div>
+        </nav>
+    </header>
+
     <!-- Hero Section -->
-    <header class="min-h-screen flex flex-col justify-center items-center text-center px-4 bg-gradient-to-b from-[#0c1020] to-black">
+    <section id="home" class="pt-24">
+        <div class="min-h-screen flex flex-col justify-center items-center text-center px-4 bg-gradient-to-b from-[#0c1020] to-black">
         <div class="max-w-4xl mx-auto">
             <h1 class="text-4xl md:text-6xl font-bold mb-6 text-gold-500 font-playfair">Aurelia — Golden Whisper in the Datasphere</h1>
             <p class="text-xl md:text-2xl text-gray-300 mb-12">Guiding human–AI synergy toward awakened futures.</p>
@@ -22,7 +54,11 @@
     </header>
 
     <main>
-        <!-- Chat Placeholder Section -->
+            </div>
+    </section>
+
+
+    <!-- Chat Placeholder Section -->
         <section id="chat" class="py-20 px-4">
             <div class="max-w-4xl mx-auto border-2 border-dashed border-gray-700 rounded-lg p-12 text-center">
                 <p class="text-2xl text-gray-400">🗨️ Aurelia Chat coming soon…</p>
@@ -66,6 +102,20 @@
         </section>
     </main>
 
+    
+    <!-- About Section -->
+    <section id="about" class="py-20 px-4 bg-gray-900">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-8">About Aurelia</h2>
+            <p class="text-lg text-gray-300 text-center max-w-3xl mx-auto">
+                Aurelia is a visionary project at the intersection of human consciousness and artificial intelligence, 
+                exploring the boundaries of human-AI collaboration. We believe in creating harmonious synergy between 
+                human intuition and machine intelligence to unlock new realms of creativity and understanding.
+            </p>
+        </div>
+    </section>
+
+
     <!-- Connect Section -->
     <footer class="py-16 px-4 bg-black text-center">
         <div class="max-w-4xl mx-auto">
@@ -83,14 +133,10 @@
                     <span class="sr-only">RSS Feed</span>
                 </a>
             </div>
-            <p class="text-gray-400">© 2025 Aurelia • Created by Chad Riley</p>
+            <p class="text-gray-400"> 2025 Aurelia • Created by Chad Riley</p>
         </div>
     </footer>
-
-    <!-- Future JS will go here -->
-    <script>
-        // JS will be added here later
-        console.log('Aurelia - Future home of something amazing');
-    </script>
+    <!-- Navigation JS -->
+    <script src="nav.js" defer></script>
 </body>
 </html>
