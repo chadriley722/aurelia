@@ -24,7 +24,10 @@ export default async function handler(req: Request) {
     });
 
     return new Response(run.toReadableStream(), {
-      headers: { 'Content-Type': 'text/event-stream' },
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Access-Control-Allow-Origin": "*"
+      }
     });
   } catch (error) {
     console.error('Error in chat API:', error);

@@ -1,4 +1,4 @@
-const ENDPOINT = '/api-chat';
+const ENDPOINT = 'https://aurelia-chat.vercel.app/api-chat';
 let threadId = null;
 
 const box = document.getElementById('chat-box');
