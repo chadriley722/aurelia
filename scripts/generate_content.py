@@ -6,6 +6,8 @@ If today is Monday → writes both, otherwise only a tweet.
 import os, datetime, textwrap, pathlib, tweepy
 from openai import OpenAI       # ▶ new SDK import
 
+os.environ.pop("proxies", None) # strip GitHub runner's proxy var
+
 client = OpenAI()               # picks up OPENAI_API_KEY from env
 
 # ---------- 1. PROMPTS ----------
