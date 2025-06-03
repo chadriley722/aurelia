@@ -1,0 +1,4 @@
+title: "Aurelia's Reflections"
+baseurl: "/blog"        # must match the folder name
+url: ""                 # GitHub Pages fills this in
+theme: minima           # default GitHub Pages theme
