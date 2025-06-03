@@ -55,4 +55,4 @@ if TODAY.weekday() == 0:            # 0 = Monday
     pathlib.Path(filename).write_text(front_matter + "\n" + post + "\n")
     print("✅ Wrote blog:", filename)
 else:
-    print("📝 Not Monday → skipped blog"
+    print("📝 Not Monday → skipped blog")
