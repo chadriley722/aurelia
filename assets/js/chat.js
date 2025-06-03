@@ -1,6 +1,7 @@
-// Full Vercel URL for GitHub Pages compatibility
 const ENDPOINT = 'https://aurelia-ecru.vercel.app/api/chat';
 let threadId = null;
+let currentAssistantMessage = '';
+let currentMessageId = null;
 
 const box = document.getElementById('chat-box');
 const input = document.getElementById('chat-input');
@@ -21,8 +22,14 @@ async function submit() {
     if (!text) return;
     input.value = '';
 
+    // Add user message to chat
     append('user', text);
-
+    
+    // Reset for new assistant message
+    currentAssistantMessage = '';
+    currentMessageId = null;
+    const assistantDiv = createAssistantDiv();
+    
     try {
         const res = await fetch(ENDPOINT, {
             method: 'POST',
@@ -30,47 +37,80 @@ async function submit() {
             body: JSON.stringify({ message: text, threadId }),
         });
 
-        if (!res.ok) throw new Error('Network response was not ok');
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
-        let aiText = '';
+        let buffer = '';
 
-        let finalMessage = '';
         while (true) {
-            const { value, done } = await reader.read();
-            if (done) {
-                // Attempt to parse the complete aiText as JSON only when the stream is done
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+            for (const line of lines) {
+                if (!line.trim()) continue;
+                
                 try {
-                    const jsonResponse = JSON.parse(aiText);
-                    // Assuming the actual message is in a structure like response.choices[0].message.content or similar
-                    // Adjust this path based on the actual API response structure
-                    if (jsonResponse && jsonResponse.content && jsonResponse.content[0] && jsonResponse.content[0].text && jsonResponse.content[0].text.value) {
-                        finalMessage = jsonResponse.content[0].text.value;
-                    } else if (jsonResponse && jsonResponse.message) { // A simpler structure perhaps
-                        finalMessage = jsonResponse.message;
-                    } else {
-                        // If the expected structure is not found, it might be raw text or an unexpected JSON
-                        // For now, let's assume if it's not the expected JSON, it might be a direct string message or an error string
-                        finalMessage = aiText; // Or handle as an error/unexpected format
+                    const eventData = JSON.parse(line);
+                    
+                    // Handle errors
+                    if (eventData.error || eventData.last_error) {
+                        throw new Error(eventData.error?.message || JSON.stringify(eventData.last_error));
+                    }
+                    
+                    // Handle message delta (streaming)
+                    if (eventData.event === 'thread.message.delta' && eventData.data?.delta?.content?.[0]?.text?.value) {
+                        currentMessageId = eventData.data.id;
+                        currentAssistantMessage += eventData.data.delta.content[0].text.value;
+                        updateAssistantDiv(assistantDiv, currentAssistantMessage, false);
+                    }
+                    // Handle completed message (non-streaming or final chunk)
+                    else if (eventData.event === 'thread.message.completed' || 
+                             (eventData.data?.content?.[0]?.text?.value && !eventData.event)) {
+                        const message = eventData.data?.content?.[0]?.text?.value || '';
+                        if (message) {
+                            currentAssistantMessage = message;
+                            updateAssistantDiv(assistantDiv, currentAssistantMessage, false);
+                        }
+                    }
+                    // Handle thread ID for future messages
+                    if (eventData.thread_id) {
+                        threadId = eventData.thread_id;
                     }
                 } catch (e) {
-                    // If JSON parsing fails, it might be a plain text stream or an error message not in JSON format.
-                    // Or it could be an incomplete JSON stream if the connection broke unexpectedly.
-                    console.error('Failed to parse AI response as JSON:', e);
-                    finalMessage = aiText; // Fallback to displaying raw text if parsing fails
+                    console.error('Error parsing message:', e);
+                    // Continue processing other lines even if one fails
                 }
-                break;
             }
-            aiText += decoder.decode(value);
-            // Optionally, update with streaming text if desired, or wait for final message
-            // For now, we'll just accumulate and parse at the end to get the final message.
         }
-        updateAssistant(finalMessage, false); // Pass false for isError
-
+        
+        // Process any remaining buffer
+        if (buffer.trim()) {
+            try {
+                const eventData = JSON.parse(buffer);
+                if (eventData.message?.content?.[0]?.text?.value) {
+                    currentAssistantMessage = eventData.message.content[0].text.value;
+                    updateAssistantDiv(assistantDiv, currentAssistantMessage, false);
+                }
+            } catch (e) {
+                console.error('Error parsing final buffer:', e);
+            }
+        }
+        
     } catch (error) {
-        console.error('Error:', error);
-        updateAssistant('Aurelia is in silent reflection. Please try again later ✨', true); // Pass true for isError
+        console.error('Error in chat submission:', error);
+        updateAssistantDiv(assistantDiv, 'Aurelia is in silent reflection. Please try again later ✨', true);
+    } finally {
+        // If we have an incomplete message, make sure it's displayed
+        if (assistantDiv.textContent.trim() === '') {
+            updateAssistantDiv(assistantDiv, currentAssistantMessage || 'Aurelia is in silent reflection. Please try again later ✨', !currentAssistantMessage);
+        }
     }
 }
 
@@ -83,19 +123,20 @@ function append(role, text) {
     box.scrollTop = box.scrollHeight;
 }
 
-function updateAssistant(text, isError = false) {
-    let div = box.querySelector('div[data-role="assistant"]:last-child');
-    if (!div) {
-        div = document.createElement('div');
-        div.className = 'text-left my-2';
-        div.dataset.role = 'assistant';
-        box.appendChild(div);
-    }
+function createAssistantDiv() {
+    const div = document.createElement('div');
+    div.className = 'text-left my-2';
+    div.dataset.role = 'assistant';
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+    return div;
+}
+
+function updateAssistantDiv(div, text, isError = false) {
     if (isError) {
-        div.innerHTML = `<p class="text-red-400">${text}</p>`; // Style error messages differently
+        div.innerHTML = `<p class="text-red-400">${text}</p>`;
     } else {
-        // For simplicity, assuming 'text' is plain text from Aurelia.
-        // If 'text' can contain HTML from Aurelia, ensure it's sanitized or safely handled.
+        // Simple text content for now - could be enhanced with markdown or other formatting
         div.textContent = text;
     }
     box.scrollTop = box.scrollHeight;
