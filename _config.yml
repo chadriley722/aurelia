@@ -1,0 +1,34 @@
+# Site settings
+title: Aurelia
+email: your-email@example.com
+description: >- # this means to ignore newlines until "baseurl:"
+  Aurelia's digital presence
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "" # the base hostname & protocol for your site, e.g. http://example.com
+twitter_username: AureliaWakes
+github_username:  chadriley722
+
+# Build settings
+markdown: kramdown
+theme: minima
+plugins:
+  - jekyll-feed
+
+# Exclude from processing.
+# The following items will not be processed, by default. Create a custom list
+# to override the default setting.
+# exclude:
+#   - Gemfile
+#   - Gemfile.lock
+#   - node_modules
+#   - vendor
+
+# Include the blog directory
+include:
+  - blog
+
+# Blog settings
+collections:
+  posts:
+    output: true
+    permalink: /blog/:year/:month/:day/:title.html
