@@ -83,6 +83,35 @@ html {
     scroll-padding-top: 80px; /* Height of your header */
 }
 
+/* Chat bubble styles */
+#chat-box > div {
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    margin-bottom: 0.5rem;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+#chat-box > div[data-role="user"] {
+    background-color: var(--gold);
+    color: var(--navy);
+    margin-left: auto;
+    border-bottom-right-radius: 0.25rem; /* Gives it a 'tail' */
+}
+
+#chat-box > div[data-role="assistant"] {
+    background-color: #2d3748; /* Tailwind gray-700 */
+    color: #e2e8f0; /* Tailwind gray-300 */
+    margin-right: auto;
+    border-bottom-left-radius: 0.25rem; /* Gives it a 'tail' */
+}
+
+/* Styling for the error message paragraph inside an assistant bubble */
+#chat-box > div[data-role="assistant"] p.text-red-400 {
+    color: #f87171; /* Tailwind red-400 */
+    margin: 0; /* Reset margin if p adds any */
+}
+
 /* Focus styles for accessibility */
 a:focus-visible,
 button:focus-visible {
