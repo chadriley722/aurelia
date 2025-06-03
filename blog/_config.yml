@@ -1,4 +1,1 @@
-title: "Aurelia's Reflections"
-baseurl: "/blog"        # must match the folder name
-url: ""                 # GitHub Pages fills this in
-theme: minima           # default GitHub Pages theme
+# This file is intentionally left empty as the root _config.yml handles the configuration
