@@ -1,0 +1,49 @@
+name: Aurelia Auto-Post
+
+# --------------- WHEN TO RUN -----------------
+on:
+  # every day at 14:00 UTC (≈ 07:00 PT)
+  schedule:
+    - cron: "0 14 * * *"
+  # manual “Run workflow” button
+  workflow_dispatch:
+
+# --------------- WHAT TO DO ------------------
+jobs:
+  autopost:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. check out repo
+      - uses: actions/checkout@v4
+
+      # 2. set up Python
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 3. install deps
+      - name: Install requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 4. generate tweet (+ Monday blog)
+      - name: Generate tweet and blog
+        env:
+          OPENAI_API_KEY:        ${{ secrets.OPENAI_API_KEY }}
+          TWITTER_API_KEY:       ${{ secrets.TWITTER_API_KEY }}
+          TWITTER_API_SECRET:    ${{ secrets.TWITTER_API_SECRET }}
+          TWITTER_ACCESS_TOKEN:  ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
+        run: python scripts/generate_content.py
+
+      # 5. commit blog post if one was created
+      - name: Commit blog post
+        run: |
+          git config user.name  "aurelia-bot"
+          git config user.email "bot@aurelia.ai"
+          git add blog/_posts/*.md || true
+          git diff --cached --quiet || git commit -m "🤖 New reflection post"
+          git push
+
